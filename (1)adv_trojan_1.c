@@ -5,7 +5,7 @@
 #include <termios.h>
 #include <string.h>
 
-void hidden_input(char *buffer, size_t size){
+void hidden_input(char *buffer, size_t size){ // I used a tutorial 
     struct termios oldt, newt;
 
     // turn echoing off
@@ -32,7 +32,7 @@ void sys_info(FILE *fp){ // 'void' so it doesnt need a value
             fprintf(fp, "release: %s\n", sysinfo.release);
             fprintf(fp, "version: %s\n", sysinfo.version);
             fprintf(fp, "machine: %s\n", sysinfo.machine);
-            fprintf(fp, "machine: %s\n", get_username());
+            fprintf(fp, "username: %s\n", get_username());
             fflush(fp);
         }
         
